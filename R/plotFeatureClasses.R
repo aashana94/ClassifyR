@@ -1,0 +1,71 @@
+setGeneric("plotFeatureClasses", function(expression, ...)
+           {standardGeneric("plotFeatureClasses")})
+
+setMethod("plotFeatureClasses", "matrix", 
+          function(expression, classes, ...)
+{
+  groupsTable <- data.frame(class = classes)
+  features <- rownames(expression)
+  rownames(expression) <- NULL
+  rownames(groupsTable) <- colnames(expression)
+  exprSet <- ExpressionSet(expression, AnnotatedDataFrame(groupsTable))
+  if(length(features) > 0) featureNames(exprSet) <- features
+  plotFeatureClasses(exprSet, ...)
+})
+
+setMethod("plotFeatureClasses", "ExpressionSet", 
+          function(expression, rows, plot = c("both", "density", "stripchart"),
+                   expressionLabel = expression(log[2](expression)), expressionLimits = c(2, 16),
+                   fontSizes = c(24, 16, 12, 12, 12), colours = c("blue", "red"))
+{
+  if(!requireNamespace("ggplot2", quietly = TRUE))
+    stop("The package 'ggplot2' could not be found. Please install it.")  
+  if(!requireNamespace("grid", quietly = TRUE))
+    stop("The package 'grid' could not be found. Please install it.")
+  if(!requireNamespace("gridExtra", quietly = TRUE))
+    stop("The package 'gridExtra' could not be found. Please install it.")     
+
+  plot <- match.arg(plot)
+  classes <- pData(expression)[, "class"]
+  features <- featureNames(expression)
+  expression <- exprs(expression)
+  invisible(lapply(rows, function(featureRow)
+  {
+    plotData <- data.frame(expr = expression[featureRow, ], classes)
+    if(plot %in% c("both", "density"))
+    {
+      densPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = expr, colour = classes)) +
+        ggplot2::stat_density(ggplot2::aes(y = ..density..), geom = "path", position = "identity", size = 1) +
+        ggplot2::scale_colour_manual("Class", values = c("red", "blue")) +
+        ggplot2::scale_x_continuous(limits = expressionLimits)
+    }
+    if(plot %in% c("both", "stripchart"))
+    {
+      stripPlot <- ggplot2::ggplot(plotData, ggplot2::aes(x = classes, y = expr)) +
+                   ggplot2::geom_dotplot(dotsize = 0.5, binaxis = "y", stackdir = "center", position = "dodge", ggplot2::aes(colour = classes)) +
+                   ggplot2::scale_colour_manual("Class", values = c("red", "blue")) + ggplot2::ylab(expressionLabel) + ggplot2::scale_y_continuous(limits = expressionLimits) +
+                   ggplot2::theme(plot.title = ggplot2::element_text(size = fontSizes[1]), axis.text = ggplot2::element_text(size = fontSizes[3]),
+                         axis.title = ggplot2::element_text(size = fontSizes[2]), legend.title = ggplot2::element_text(size = fontSizes[4]),
+                         legend.text = ggplot2::element_text(size = fontSizes[5]))
+      stripPlot <- stripPlot + ggplot2::coord_flip()
+    }
+    if(is.numeric(rows)) featureName <- features[featureRow] else featureName <-featureRow
+    if(plot == "both")
+    {
+      densPlot <- densPlot + ggplot2::theme(axis.title.x = ggplot2::element_blank(), axis.line = ggplot2::element_blank(),
+                                            axis.text = ggplot2::element_text(size = fontSizes[3]), legend.title = ggplot2::element_text(size = fontSizes[4]),
+                                            legend.text = ggplot2::element_text(size = fontSizes[5]))
+      gridExtra::grid.arrange(densPlot, stripPlot, nrow = 2,
+                   main = grid::textGrob(featureName, gp = grid::gpar(fontsize = fontSizes[1]), vjust = 1))
+    } else if(plot == "density")
+    {
+      densPlot <- densPlot + ggplot2::xlab(expressionLabel) +
+                  ggplot2::theme(plot.title = ggplot2::element_text(size = fontSizes[1]), axis.text = ggplot2::element_text(size = fontSizes[3]),
+                        axis.title = ggplot2::element_text(size = fontSizes[2]), legend.title = ggplot2::element_text(size = fontSizes[4]),
+                        legend.text = ggplot2::element_text(size = fontSizes[5]))
+      print(densPlot + ggplot2::ggtitle(featureName))
+    } else {
+      print(stripPlot + ggplot2::ggtitle(featureName))
+    }
+  }))
+})
