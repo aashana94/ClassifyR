@@ -1,0 +1,37 @@
+Package: ClassifyR
+Type: Package
+Title: A framework for two-class classification problems, with
+        applications to differential variability and differential
+        distribution testing
+Version: 1.6.0
+Date: 2016-03-08
+Author: Dario Strbenac, John Ormerod, Graham Mann, Jean Yang
+Maintainer: Dario Strbenac <dario.strbenac@sydney.edu.au>
+VignetteBuilder: knitr
+biocViews: Classification, Survival
+Depends: R (>= 3.0.3), methods, Biobase, BiocParallel
+Imports: locfit, ROCR, grid
+Suggests: limma, edgeR, car, Rmixmod, ggplot2 (>= 2.0.0), gridExtra (>= 2.0.0),
+        BiocStyle, pamr, sparsediscrim, PoiClaClu, curatedOvarianData,
+        parathyroidSE, knitr, klaR, gtable, scales, e1071, rmarkdown, IRanges
+Description: The software formalises a framework for classification in R.
+             There are four stages; Data transformation, feature selection, classifier training,
+             and prediction. The requirements of variable types and names are
+             fixed, but specialised variables for functions can also be provided.
+             The classification framework is wrapped in a driver loop, that
+             reproducibly carries out a number of cross-validation schemes.
+             Functions for differential expression, differential variability,
+             and differential distribution are included. Additional functions
+             may be developed by the user, by creating an interface to the framework.
+Collate: bartlettSelection.R classes.R utilities.R calcPerformance.R classifyInterface.R
+         DMDselection.R edgeRselection.R errorMap.R fisherDiscriminant.R distribution.R
+        getLocationsAndScales.R KolmogorovSmirnovSelection.R
+        KullbackLeiblerSelection.R leveneSelection.R
+        likelihoodRatioSelection.R limmaSelection.R mixmodels.R
+        naiveBayesKernel.R nearestShrunkenCentroidSelectionInterface.R
+        nearestShrunkenCentroidTrainInterface.R
+        nearestShrunkenCentroidPredictInterface.R performancePlot.R
+        plotFeatureClasses.R previousSelection.R rankingPlot.R ROCplot.R
+        runTest.R runTests.R selectionPlot.R subtractFromLocation.R
+License: GPL-3
+Packaged: 2014-10-18 11:16:55 UTC; dario
